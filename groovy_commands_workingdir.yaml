@@ -1,0 +1,21 @@
+id: groovy_commands_workingdir
+namespace: qa.groovy459final
+tasks:
+  - id: values
+    type: io.kestra.plugin.core.debug.Return
+    format: "path={{ trigger.vars.path }} usable={{ trigger.vars.usable }} flow={{ trigger.vars.flow }} exitCode={{ trigger.exitCode }}"
+triggers:
+  - id: poll
+    type: io.kestra.plugin.scripts.groovy.CommandsTrigger
+    interval: PT5S
+    containerImage: groovy:jdk21
+    exitCondition: exit 0
+    commands:
+      - |
+        groovy -e 'def dir = new File('"'"'{{ workingDir }}'"'"')
+        assert dir.isAbsolute() && dir.isDirectory()
+        def probe = new File(dir, '"'"'probe.txt'"'"')
+        probe.text = '"'"'usable'"'"'
+        assert probe.text == '"'"'usable'"'"'
+        println '"'"'::{"outputs":{"path":"{{ workingDir }}","usable":true,"flow":"{{ flow.id }}"}}::'"'"'
+        '
